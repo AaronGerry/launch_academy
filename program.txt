@@ -1,0 +1,23 @@
+Gameboard: Class
+- Made up of spots
+- Row.each do, column.each do to generate board
+- location << Spot.new
+- randomly assigns mines
+
+Row: Class
+- array of spaces
+- contains number to designate which row it is?
+
+Spots: Class
+- generate 1 spot for each spot on the board
+- Probably abstract location to visual board (know what you are associating with based on position, but not directly related to visual board spot)
+- Contains: Mine, no mine, clicked/ not clicked
+- Methods:
+  - Next to mines?
+  -
+
+Player Interaction:
+- What has been clicked, get column and row number
+
+Game state
+Win/Loss
