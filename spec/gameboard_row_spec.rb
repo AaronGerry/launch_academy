@@ -8,7 +8,7 @@ describe GameboardRow do
   end
 
   it 'it contains a list of items' do
-    gameboard.generate
+    gameboard.generate_grid
 
     expect(gameboard.grid[0].spaces_array.size).to eq(5)
   end

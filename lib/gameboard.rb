@@ -8,12 +8,11 @@ class Gameboard
     @grid = nil
   end
 
-  def generate
-    is_a_mine = false
+  def generate_grid
     @rows.times do |row|
       row = GameboardRow.new
       @columns.times do |col|
-        row.spaces_array << GameboardSpace.new(is_a_mine)
+        row.spaces_array << nil
       end
       if @grid.nil?
         @grid = []
@@ -25,13 +24,35 @@ class Gameboard
     @grid
   end
 
-  # need a mine_count_counter to keep track of all the mine pieces
-  # probably want it to be a separate method that goes through each space after they are all made
+  def place_pieces
+    mines = self.create_mines
+    not_mines = self.create_blank_spaces
+    all_spaces = mines + not_mines
+    all_spaces.shuffle!
 
-  def place_mines
-    # need a way to randomly assign mines
-    # need to cycle through all spaces to assign mines
-    #use @rows and @columns to determine total number of spaces
+    @grid.each do |row|
+      row.spaces_array.map! { |space| space = all_spaces.pop }
+    end
+    @grid
+  end
+
+  def create_mines
+    mine_game_spaces = []
+    @mine_count.times do |mine|
+      mine = GameboardSpace.new(true)
+      mine_game_spaces << mine
+    end
+    mine_game_spaces
+  end
+
+  def create_blank_spaces
+    blank_spaces = []
+    total_spots = @rows * @columns - @mine_count
+    total_spots.times do |not_mine|
+      not_mine = GameboardSpace.new(false)
+      blank_spaces << not_mine
+    end
+    blank_spaces
   end
 
 private

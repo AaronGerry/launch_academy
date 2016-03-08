@@ -4,8 +4,8 @@ require 'spec_helper'
 
 
 describe Gameboard do
-  let(:gameboard) { Gameboard.new(20, 20, 50) }
-  let(:generated_board) { gameboard.generate }
+  let(:gameboard) { Gameboard.new(20, 20, 10) }
+  let(:generated_board) { gameboard.generate_grid }
 
   it 'has columns' do
 
@@ -27,13 +27,27 @@ describe Gameboard do
   it 'has rows made up of individual game spaces' do
     generated_board
 
-    expect(gameboard.grid[0].spaces_array[0]).to_not be_nil
+    expect(gameboard.grid[0].spaces_array[0]).to eq nil
   end
 
   it 'makes some game spaces mines' do
 
-    expect(gameboard.place_mines).to include(mine)
+    expect(gameboard.create_mines[0].mine).to be true
   end
+
+  it 'makes game spaces that are not mines' do
+
+    expect(gameboard.create_blank_spaces[0].mine).to be false
+  end
+
+  it 'places mines onto the board' do
+    new_gameboard = Gameboard.new(5, 5, 25)
+    new_gameboard.generate_grid
+    new_gameboard.place_pieces
+
+    expect(new_gameboard.grid[0].spaces_array[0].mine).to be true
+  end
+
 
 
 # this probably falls outside the purview of gameboard... More pertinent to game space itself
