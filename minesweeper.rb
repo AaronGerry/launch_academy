@@ -10,7 +10,7 @@ class Minesweeper < Gosu::Window
   def initialize
     super(SCREEN_WIDTH, SCREEN_HEIGHT, false)
 
-    @field = Minefield.new(20, 20, 50)
+    @field = Minefield.new(4, 4, 8)
     @mine_font = Gosu::Font.new(self, "Arial", (cell_size / 1.2).to_i)
     @large_font = Gosu::Font.new(self, "Arial", screen_height / 6)
     @state = :running
@@ -41,7 +41,7 @@ class Minesweeper < Gosu::Window
   end
 
   def reset
-    @field = Minefield.new(20, 20, 50)
+    @field = Minefield.new(4, 4, 8)
     @state = :running
   end
 
@@ -49,9 +49,9 @@ class Minesweeper < Gosu::Window
     draw_rect(0, 0, screen_width, screen_height, Gosu::Color::GREEN)
     draw_rect(start_x, start_y, field_width, field_height, Gosu::Color::BLACK)
 
-    dark_gray = Gosu::Color.new(50, 50, 50)
-    gray = Gosu::Color.new(127, 127, 127)
-    light_gray = Gosu::Color.new(200, 200, 200)
+    dark_gray = Gosu::Color.new(50, 50, 50) #space border
+    gray = Gosu::Color.new(127, 127, 127) #space color
+    light_gray = Gosu::Color.new(200, 200, 200) #cleared space
 
     (0...field.row_count).each do |row|
       (0...field.column_count).each do |col|
@@ -60,19 +60,19 @@ class Minesweeper < Gosu::Window
 
         adjacent_mines = 0
 
-        if !field.cell_cleared?(row, col)
-          color = gray
+        if !field.cell_cleared?(row, col) # if field.cell_cleared == false, cell has not been clicked
+          color = gray # don't do anything
         elsif field.contains_mine?(row, col)
-          color = Gosu::Color::RED
-        else
-          adjacent_mines = field.adjacent_mines(row, col)
+          color = Gosu::Color::RED # if cell is a mine
+        else # if clear, light_gray
+          adjacent_mines = field.adjacent_mines(row, col) # checks for adjacement mines to the cleared space >> uses this number to write in text below
           color = light_gray
         end
 
         draw_rect(x, y, cell_size, cell_size, dark_gray)
         draw_rect(x + 2, y + 2, cell_size - 4, cell_size - 4, color)
 
-        if adjacent_mines > 0
+        if adjacent_mines > 0 # puts number of mines into text on spaces
           text_x = x + (cell_size - mine_font.text_width(adjacent_mines)) / 2
           text_y = y + (cell_size - mine_font.height) / 2
 
