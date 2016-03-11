@@ -22,8 +22,9 @@ describe GameboardSpace do
   end
 
   it 'has a count for adjacent mines' do
+    gameboard.set_gameboard
 
-    expect(space.adjacent_mines).to eq(2)
+    expect(gameboard.grid[0].spaces_array[0].adjacent_mines).to eq(3)
   end
 
   it 'has an x-coordinate' do

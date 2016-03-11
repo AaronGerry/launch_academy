@@ -1,155 +1,242 @@
-# now that we have the field of play with spaces, can start implimenting user interaction
-
-require_relative 'gameboard'
+require_relative 'gameboard_space'
+require_relative 'gameboard_row'
 require 'pry'
 
 class Minefield
-  attr_reader :row_count, :column_count, :current_move
+  attr_reader :row_count, :column_count, :mine_count
 
   def initialize(row_count, column_count, mine_count)
     @row_count = row_count
     @column_count = column_count
     @mine_count = mine_count
-    self.create_gameboard
+    @gameboard = self.set_gameboard
   end
 
-  def create_gameboard
-    @gameboard = Gameboard.new(@row_count, @column_count, @mine_count)
-    @gameboard.set_gameboard
+  def set_gameboard
+    self.generate_gameboard
+    self.create_mines
+    self.create_blank_spaces
+    self.place_pieces
+    self.count_adjacent_mines
+  end
+
+  def generate_gameboard
+    @row_count.times do |row|
+      row = GameboardRow.new
+      @column_count.times do |col|
+        row.spaces_array << nil
+      end
+      if @gameboard.nil?
+        @gameboard = []
+        @gameboard << row
+      else
+        @gameboard << row
+      end
+    end
+    @gameboard
+  end
+
+  def place_pieces
+    mines = self.create_mines
+    not_mines = self.create_blank_spaces
+    all_spaces = mines + not_mines
+    self.assign_coordinates(all_spaces.shuffle!)
+  end
+
+  def assign_coordinates(gameboard_pieces)
+    @gameboard.each_with_index do |row, row_index|
+      row.spaces_array.each_with_index do |space, col_index|
+        current_gameboard_space = gameboard_pieces.pop
+        if current_gameboard_space.x_coord.nil?
+          current_gameboard_space.x_coord = col_index
+          row.spaces_array[col_index] = current_gameboard_space
+        end
+        if current_gameboard_space.y_coord.nil?
+          current_gameboard_space.y_coord = row_index
+          row.spaces_array[col_index] = current_gameboard_space
+        end
+      end
+    end
+    @gameboard
+  end
+
+  def create_mines
+    mine_game_spaces = []
+    @mine_count.times do |mine|
+      mine = GameboardSpace.new(true)
+      mine_game_spaces << mine
+    end
+    mine_game_spaces
+  end
+
+  def create_blank_spaces
+    blank_spaces = []
+    total_spots = @row_count * @column_count - @mine_count
+    total_spots.times do |not_mine|
+      not_mine = GameboardSpace.new(false)
+      blank_spaces << not_mine
+    end
+    blank_spaces
+  end
+
+  def count_adjacent_mines
+    @gameboard.each do |row|
+      row.spaces_array.each do |space|
+        adjacent_spaces = []
+        # above
+        if space.y_coord - 1 >= 0
+            adjacent_spaces << @gameboard[space.x_coord].spaces_array[space.y_coord -
+              1]
+          if space.x_coord - 1 >= 0
+            adjacent_spaces << @gameboard[space.x_coord -
+              1].spaces_array[space.y_coord - 1]
+          end
+          if space.x_coord + 1 <= @column_count - 1
+            adjacent_spaces << @gameboard[space.x_coord +
+              1].spaces_array[space.y_coord - 1]
+          end
+        end
+        # same row
+        if space.x_coord - 1 >= 0
+          adjacent_spaces << @gameboard[space.x_coord - 1].spaces_array[space.y_coord]
+        end
+        if space.x_coord + 1 <= @column_count - 1
+          adjacent_spaces << @gameboard[space.x_coord + 1].spaces_array[space.y_coord]
+        end
+        # below
+        if space.y_coord + 1 <= @row_count - 1
+          adjacent_spaces << @gameboard[space.x_coord].spaces_array[space.y_coord + 1]
+          if space.x_coord - 1 >= 0
+            adjacent_spaces << @gameboard[space.x_coord - 1].spaces_array[space.y_coord + 1]
+          end
+          if space.x_coord + 1 <= @column_count - 1
+            adjacent_spaces << @gameboard[space.x_coord + 1].spaces_array[space.y_coord + 1]
+          end
+        end
+      space.adjacent_mines = adjacent_spaces.count{ |space| space.mine == true }
+      end
+    end
   end
 
   # Return true if the cell been uncovered, false otherwise.
   def cell_cleared?(row, col)
-    # binding.pry
-    if @current_move == :clicked
-      true
+    clear = true
+    # binding.pry if @pause == true
+    if @gameboard[row].spaces_array[col].state == :clicked
+      clear = true
     else
-      false
+      clear = false
     end
-    #coordinates for click come in
+    clear
   end
 
   # Uncover the given cell. If there are no adjacent mines to this cell
   # it should also clear any adjacent cells as well. This is the action
   # when the player clicks on the cell.
   def clear(row, col)
-    # 1) current_move = CurrentMove.new()
-      # row, col, adjacent_mines
-    # 2) look up game space object, inside are state, mine, and adjacent mine info
-
-    @current_move = @gameboard.user_move(row, col)
-    # clear will only check the clicked spot
-
-
-      # top left was 0, 0
-      binding.pry
-
-
-      # logic for checking adjacent spaces >> abstract out into method or module
-      # options:
-      # if space clicked?
-      # if space mine?
-      # if space.exist? # if true
-              # if space.nil? >> need way to ignore spaces that don't exist/ fall outside the board, easier than writing test cases for all spots along edges >> this can be a separate method. ie., check if space.exist?
-        # if @grid[row - 1].spaces_array[col -1].state == :unclicked
-        #   && @grid[row - 1].spaces_array[col -1].mine == false
-        #   @grid[row - 1].spaces_array[col -1].state == :clicked
-
-
-        # x - 1, y - 1 (top left)
-        # x, y - 1 (top middle)
-        # x + 1, y -1 (top right)
-        # x - 1, y (middle left)
-        # x + 1, y (middle right)
-        # x - 1, y + 1 (bottom left)
-        # x, y + 1 (bottom middle)
-        # x + 1, y + 1 (bottom right)
-
-    # elsif col == 0 || col == column_count - 1
-    # check remaining spaces
-
-    # end
-    # this turned all spaces light gray
-    # doing this because no adjacent mines?
-  end
-
-  def exist?(row, col)
-    # if less than 0 for x or greater than row_count
-    # if less than 0 for y or greater than column_count
-    if row == 0 # top
-      # any row - 1 does not exist
-      if row - 1
-        false
-      elsif row + 1
-        true
-      end
-    elsif row == row_count
-      if row - 1
-        true
-      elsif row + 1
-        false
-      end
+    clear = false
+    if @gameboard[row].spaces_array[col].state == :unclicked
+      @gameboard[row].spaces_array[col].state = :clicked
+      clear = true
+      @pause = true
     end
-
-      # dealing with top and bottom rows
+    clear
+    self.check_adjacent_mines(row, col)
   end
 
-  # def adjacent_spaces
-
-  # 1) Check adjacent space
-  # 2) check if space exists
-  # 3) check if unclicked and not a mine...
-
-    # if space.exist? # if true
-      # if @grid[row - 1].spaces_array[col -1].state == :unclicked
-      #   && @grid[row - 1].spaces_array[col -1].mine == false
-      #   @grid[row - 1].spaces_array[col -1].state == :clicked
-
-  # @grid[row - 1].spaces_array[(col - 1)..(col + 1)].each do |space|
-    # if space.exists?
-      # if space.state == :unclicked && space.mine == false
-        # space.state = :clicked
-      # elsif space.state == :unclicked && space.mine == true
-        # adjacent_mines += 1
-
-        # row.spaces_array.map! { |space| space = all_spaces.pop }
-
-
-      # always the same pattern:
-        # (row - 1, (x - 1, x, x + 1))
-        # (row, (x - 1, x + 1))
-        # (row + 1, (x - 1, x, x + 1))
-
-      # x - 1, y - 1 (top left)
-      # x, y - 1 (top middle)
-      # x + 1, y -1 (top right)
-      # x - 1, y (middle left)
-      # x + 1, y (middle right)
-      # x - 1, y + 1 (bottom left)
-      # x, y + 1 (bottom middle)
-      # x + 1, y + 1 (bottom right)
-  # end
+  def check_adjacent_mines(row, col) ## work on
+      # above
+      if row - 1 >= 0
+        if @gameboard[row - 1].spaces_array[col].mine == false
+          @gameboard[row - 1].spaces_array[col].state = :clicked
+        end
+        if col - 1 >= 0
+          if @gameboard[row - 1].spaces_array[col - 1].mine == false
+            @gameboard[row - 1].spaces_array[col - 1].state = :clicked
+          end
+        end
+        if col + 1 <= @column_count - 1
+          if @gameboard[row - 1].spaces_array[col + 1].mine == false
+            @gameboard[row - 1].spaces_array[col + 1].state = :clicked
+          end
+        end
+      end
+      # same row
+      if col - 1 >= 0
+        if @gameboard[row].spaces_array[col - 1].mine == false
+          @gameboard[row].spaces_array[col - 1].state = :clicked
+        end
+      end
+      if col + 1 <= @column_count - 1
+        if @gameboard[row].spaces_array[col + 1].mine == false
+          @gameboard[row].spaces_array[col + 1].state = :clicked
+        end
+      end
+      # below
+      if row + 1 <= @row_count - 1
+        if @gameboard[row + 1].spaces_array[col].mine == false
+          @gameboard[row + 1].spaces_array[col].state = :clicked
+        end
+        if col - 1 >= 0
+          if @gameboard[row + 1].spaces_array[col - 1].mine == false
+            @gameboard[row + 1].spaces_array[col - 1].state = :clicked
+          end
+        end
+        if col + 1 <= @column_count - 1
+          if @gameboard[row + 1].spaces_array[col + 1].mine == false
+            @gameboard[row + 1].spaces_array[col + 1].state = :clicked
+          end
+        end
+      end
+  end
 
   # Check if any cells have been uncovered that also contained a mine. This is
   # the condition used to see if the player has lost the game.
   def any_mines_detonated?
-    false
+    mine_blown_up = false
+    if mine_blown_up == false
+      @gameboard.each do |row|
+        row.spaces_array.each do |space|
+          if space.mine == true && space.state == :clicked
+            mine_blown_up = true
+          end
+        end
+      end
+    end
+    mine_blown_up
   end
 
   # Check if all cells that don't have mines have been uncovered. This is the
   # condition used to see if the player has won the game.
   def all_cells_cleared?
-    false
+    all_clear = true
+    if all_clear == true
+      @gameboard.each do |row|
+        row.spaces_array.each do |space|
+          if space.mine == false && space.state == :clicked
+            all_clear = true
+          else
+            all_clear = false
+          end
+        end
+      end
+    end
+    all_clear
   end
 
   # Returns the number of mines that are surrounding this cell (maximum of 8).
   def adjacent_mines(row, col)
-
-    0
+    @gameboard[row].spaces_array[col].adjacent_mines
   end
 
   # Returns true if the given cell contains a mine, false otherwise.
-  def contains_mine?(row, col)
-    false
+  def contains_mine?(row, col) ## this works b/c spot will turn red
+    is_mine = false
+    if @gameboard[row].spaces_array[col].mine == true
+      is_mine = true
+    else
+      is_mine = false
+    end
+    is_mine
   end
 end
