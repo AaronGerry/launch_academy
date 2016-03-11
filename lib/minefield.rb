@@ -79,6 +79,7 @@ class Minefield
     blank_spaces
   end
 
+# this is redundant with the below check_adjacent_mines(row, col) >> refactor and remove
   def count_adjacent_mines
     @gameboard.each do |row|
       row.spaces_array.each do |space|
@@ -118,10 +119,8 @@ class Minefield
     end
   end
 
-  # Return true if the cell been uncovered, false otherwise.
   def cell_cleared?(row, col)
     clear = true
-    # binding.pry if @pause == true
     if @gameboard[row].spaces_array[col].state == :clicked
       clear = true
     else
@@ -130,9 +129,6 @@ class Minefield
     clear
   end
 
-  # Uncover the given cell. If there are no adjacent mines to this cell
-  # it should also clear any adjacent cells as well. This is the action
-  # when the player clicks on the cell.
   def clear(row, col)
     clear = false
     if @gameboard[row].spaces_array[col].state == :unclicked
@@ -144,7 +140,7 @@ class Minefield
     self.check_adjacent_mines(row, col)
   end
 
-  def check_adjacent_mines(row, col) ## work on
+  def check_adjacent_mines(row, col)
       # above
       if row - 1 >= 0
         if @gameboard[row - 1].spaces_array[col].mine == false
@@ -190,8 +186,6 @@ class Minefield
       end
   end
 
-  # Check if any cells have been uncovered that also contained a mine. This is
-  # the condition used to see if the player has lost the game.
   def any_mines_detonated?
     mine_blown_up = false
     if mine_blown_up == false
@@ -206,8 +200,6 @@ class Minefield
     mine_blown_up
   end
 
-  # Check if all cells that don't have mines have been uncovered. This is the
-  # condition used to see if the player has won the game.
   def all_cells_cleared?
     all_clear = true
     if all_clear == true
@@ -224,13 +216,11 @@ class Minefield
     all_clear
   end
 
-  # Returns the number of mines that are surrounding this cell (maximum of 8).
   def adjacent_mines(row, col)
     @gameboard[row].spaces_array[col].adjacent_mines
   end
 
-  # Returns true if the given cell contains a mine, false otherwise.
-  def contains_mine?(row, col) ## this works b/c spot will turn red
+  def contains_mine?(row, col)
     is_mine = false
     if @gameboard[row].spaces_array[col].mine == true
       is_mine = true

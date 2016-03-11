@@ -9,12 +9,4 @@ class GameboardSpace
     @x_coord = nil
     @y_coord = nil
   end
-
-  # could make sense to store adjacent_mines in the instance of each space
-  # then you would run through and mark these after creating the board
-  # as I'm doing it now, I'm going to check each space on a move by move basis
-
-
-  # think it makes sense to store x, y coordinates in each space
-  # this way, when I go through each space to search for adjacent mines, I can use the coordinates to search for neighbors
 end
